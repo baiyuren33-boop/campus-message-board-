@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Hub - 校园多功能智能留言板</title>
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN for Data Visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons for premium modern iconography -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- CSS styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边栏导航 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <i data-lucide="graduation-cap"></i>
+                    </div>
+                    <span class="logo-text">Campus<span>Hub</span></span>
+                </div>
+                <div class="pulse-indicator" title="系统正常运行中"></div>
+            </div>
+
+            <nav class="sidebar-menu">
+                <a href="#dashboard" class="menu-item active" data-view="dashboard">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>仪表盘</span>
+                </a>
+                <a href="#board" class="menu-item" data-view="board">
+                    <i data-lucide="message-square"></i>
+                    <span>校园留言板</span>
+                </a>
+                <a href="#scheduler" class="menu-item" data-view="scheduler">
+                    <i data-lucide="calendar"></i>
+                    <span>学习日程表</span>
+                </a>
+                <a href="#ai-assistant" class="menu-item" data-view="ai-assistant">
+                    <i data-lucide="bot"></i>
+                    <span>智能学伴</span>
+                </a>
+                <a href="#game" class="menu-item" data-view="game">
+                    <i data-lucide="gamepad-2"></i>
+                    <span>校园挑战赛</span>
+                </a>
+                <a href="#data-viz" class="menu-item" data-view="data-viz">
+                    <i data-lucide="bar-chart-3"></i>
+                    <span>活跃度分析</span>
+                </a>
+                <a href="#settings" class="menu-item" data-view="settings">
+                    <i data-lucide="settings"></i>
+                    <span>系统设置</span>
+                </a>
+            </nav>
+
+            <!-- 用户信息区 -->
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="avatar-container">
+                        <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=Felix" alt="Avatar" id="user-avatar">
+                        <span class="level-badge" id="user-level">LV.1</span>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name-wrapper">
+                            <span class="user-name" id="user-display-name">校园新人</span>
+                            <button class="edit-name-btn" id="edit-name-btn" title="修改昵称">
+                                <i data-lucide="edit-3"></i>
+                            </button>
+                        </div>
+                        <div class="points-progress-container">
+                            <div class="points-text">
+                                <span class="points-val" id="user-points">0</span> pts
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" id="level-progress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 顶部导航栏 -->
+            <header class="topbar">
+                <div class="search-bar">
+                    <i data-lucide="search"></i>
+                    <input type="text" placeholder="搜索留言、日程或项目..." id="global-search">
+                </div>
+                <div class="topbar-actions">
+                    <!-- 数据库模式显示 -->
+                    <div class="status-indicator db-status" id="db-status-badge">
+                        <span class="indicator-dot green"></span>
+                        <span class="indicator-text">LocalStorage 本地</span>
+                    </div>
+                    <!-- AI API模式显示 -->
+                    <div class="status-indicator ai-status" id="ai-status-badge">
+                        <span class="indicator-dot yellow"></span>
+                        <span class="indicator-text">AI 模拟模式</span>
+                    </div>
+                    <!-- 主题切换 -->
+                    <button class="theme-toggle" id="theme-toggle-btn" title="切换深色/浅色模式">
+                        <i data-lucide="moon" id="theme-icon"></i>
+                    </button>
+                    <!-- 通知 -->
+                    <div class="notifications-dropdown">
+                        <button class="icon-btn" id="notifications-btn" title="通知消息">
+                            <i data-lucide="bell"></i>
+                            <span class="badge" id="noti-badge">2</span>
+                        </button>
+                        <div class="dropdown-content" id="notifications-menu">
+                            <div class="dropdown-header">
+                                <h3>系统通知</h3>
+                                <button id="clear-noti-btn">清除全部</button>
+                            </div>
+                            <div class="dropdown-list" id="notifications-list">
+                                <div class="notification-item unread">
+                                    <div class="noti-icon info"><i data-lucide="info"></i></div>
+                                    <div class="noti-details">
+                                        <p>欢迎来到 <strong>Campus Hub</strong>！开始探索多功能服务吧。</p>
+                                        <span>刚才</span>
+                                    </div>
+                                </div>
+                                <div class="notification-item unread">
+                                    <div class="noti-icon gift"><i data-lucide="award"></i></div>
+                                    <div class="noti-details">
+                                        <p>您已解锁“<strong>初来乍到</strong>”勋章，获得 10 积分！</p>
+                                        <span>刚才</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 视图容器 -->
+            <div class="view-container">
+                
+                <!-- 1. 仪表盘主页视图 -->
+                <section id="view-dashboard" class="content-view active">
+                    <div class="welcome-banner">
+                        <div class="banner-text">
+                            <h1 class="welcome-title">哈罗，<span id="welcome-username">校园新人</span>！</h1>
+                            <p>今天是美好的一天，继续向您的学习目标进发吧！</p>
+                        </div>
+                        <div class="banner-stats">
+                            <div class="b-stat-card">
+                                <span class="b-stat-num" id="dashboard-stat-posts">0</span>
+                                <span class="b-stat-label">社区留言</span>
+                            </div>
+                            <div class="b-stat-card">
+                                <span class="b-stat-num" id="dashboard-stat-events">0</span>
+                                <span class="b-stat-label">今日活动</span>
+                            </div>
+                            <div class="b-stat-card">
+                                <span class="b-stat-num" id="dashboard-stat-focus">0m</span>
+                                <span class="b-stat-label">专注时长</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <!-- 今日学习日程速览 -->
+                        <div class="card col-2">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <i data-lucide="calendar-check"></i>
+                                    <h3>今日学习计划</h3>
+                                </div>
+                                <a href="#scheduler" class="card-action-link view-all-link">管理日程 &rarr;</a>
+                            </div>
+                            <div class="card-body">
+                                <div class="today-schedule-list" id="dashboard-schedule-list">
+                                    <!-- 动态载入今日日程 -->
+                                    <div class="empty-state">
+                                        <p>今天还没有安排学习活动哦~</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 留言板热点推荐 -->
+                        <div class="card col-2">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <i data-lucide="trending-up"></i>
+                                    <h3>社区热门讨论</h3>
+                                </div>
+                                <a href="#board" class="card-action-link view-all-link">进入留言板 &rarr;</a>
+                            </div>
+                            <div class="card-body">
+                                <div class="hot-posts-list" id="dashboard-hot-posts">
+                                    <!-- 动态载入热门留言 -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 智能学伴每日推荐 -->
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <i data-lucide="sparkles"></i>
+                                    <h3>AI 每日推荐</h3>
+                                </div>
+                            </div>
+                            <div class="card-body ai-recommend-body">
+                                <div class="ai-tip-card">
+                                    <p id="ai-daily-quote">“学习并不是为了证明什么，而是为了探索你未曾见过的世界。”</p>
+                                    <span class="ai-tip-tag"># 今日学习小贴士</span>
+                                </div>
+                                <button class="btn btn-secondary btn-sm full-width" id="refresh-ai-tip-btn">
+                                    <i data-lucide="rotate-cw"></i> 换一条建议
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 极速发布微留言 -->
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <i data-lucide="pen-tool"></i>
+                                    <h3>随时留言</h3>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <form id="quick-post-form">
+                                    <textarea placeholder="有什么新鲜事或创意想分享给同学们吗？..." required id="quick-post-content"></textarea>
+                                    <div class="quick-post-footer">
+                                        <select id="quick-post-category">
+                                            <option value="community">💬 社区交流</option>
+                                            <option value="study">📚 学习辅助</option>
+                                            <option value="creative">💡 创意项目</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-primary btn-sm">发布</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. 校园留言板视图 -->
+                <section id="view-board" class="content-view">
+                    <div class="board-control-panel">
+                        <div class="board-filters">
+                            <button class="filter-tab active" data-category="all">全部</button>
+                            <button class="filter-tab" data-category="study">📚 学习辅助</button>
+                            <button class="filter-tab" data-category="schedule">📅 日程分享</button>
+                            <button class="filter-tab" data-category="game">🎮 校园游戏</button>
+                            <button class="filter-tab" data-category="community">💬 社区服务</button>
+                            <button class="filter-tab" data-category="ai">🤖 AI 应用</button>
+                            <button class="filter-tab" data-category="data-viz">📊 数据分析</button>
+                            <button class="filter-tab" data-category="creative">💡 创意项目</button>
+                        </div>
+                        <button class="btn btn-primary" id="open-post-modal-btn">
+                            <i data-lucide="plus"></i> 发表留言
+                        </button>
+                    </div>
+
+                    <div class="posts-container">
+                        <div class="posts-list" id="board-posts-list">
+                            <!-- 动态加载留言列表 -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. 学习日程表视图 -->
+                <section id="view-scheduler" class="content-view">
+                    <div class="scheduler-layout">
+                        <!-- 日程创建面板 -->
+                        <div class="scheduler-form-panel card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <i data-lucide="calendar-plus"></i>
+                                    <h3>安排新日程</h3>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <form id="schedule-form">
+                                    <div class="form-group">
+                                        <label for="sched-title">日程/活动名称</label>
+                                        <input type="text" id="sched-title" placeholder="如：微积分备考/英语四级学习" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="sched-date">日期</label>
+                                            <input type="date" id="sched-date" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="sched-time">时间</label>
+                                            <input type="time" id="sched-time" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="sched-type">类型</label>
+                                            <select id="sched-type">
+                                                <option value="study">📚 自习备考</option>
+                                                <option value="group">👥 学习小组</option>
+                                                <option value="exam">✏️ 考试倒计时</option>
+                                                <option value="activity">🌟 校园活动</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="sched-duration">时长 (分钟)</label>
+                                            <input type="number" id="sched-duration" min="10" max="480" value="60">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="sched-desc">补充说明 (可留下联系方式或地点)</label>
+                                        <textarea id="sched-desc" placeholder="请输入活动详情..."></textarea>
+                                    </div>
+                                    <div class="form-group checkbox-group">
+                                        <input type="checkbox" id="sched-share-board" checked>
+                                        <label for="sched-share-board">同步发布留言到校园留言板，招募同伴</label>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary full-width">添加日程</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- 日程列表与倒计时 -->
+                        <div class="scheduler-display-panel card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <i data-lucide="clock"></i>
+                                    <h3>您的学习日程表</h3>
+                                </div>
+                                <div class="scheduler-filters">
+                                    <button class="badge-filter active" data-sched-filter="all">全部</button>
+                                    <button class="badge-filter" data-sched-filter="upcoming">即将到来</button>
+                                    <button class="badge-filter" data-sched-filter="history">已过期</button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="scheduler-timeline" id="scheduler-timeline-list">
+                                    <!-- 动态加载日程列表 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. 智能学伴与学习辅助视图 -->
+                <section id="view-ai-assistant" class="content-view">
+                    <div class="ai-assistant-layout">
+                        <!-- AI 聊天模块 -->
+                        <div class="chat-module card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <i data-lucide="bot"></i>
+                                    <h3>智能学伴 AI</h3>
+                                </div>
+                                <span class="ai-mode-status" id="ai-active-indicator">模拟模式</span>
+                            </div>
+                            <div class="card-body chat-body" id="chat-messages-container">
+                                <!-- 聊天记录 -->
+                                <div class="chat-message bot">
+                                    <div class="msg-avatar">🤖</div>
+                                    <div class="msg-bubble">
+                                        你好！我是你的专属校园智能学伴。我可以帮你：
+                                        <ul>
+                                            <li>润色与排版你的留言板发言</li>
+                                            <li>提供学习技巧（如番茄钟、康奈尔笔记法）</li>
+                                            <li>为你解答各学科基础知识</li>
+                                            <li>生成富有创意的项目灵感</li>
+                                        </ul>
+                                        请问有什么我可以帮你的？
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chat-footer">
+                                <input type="text" id="chat-input" placeholder="输入您的问题，如 '帮我润色一段招募学习小组的发言'...">
+                                <button class="btn btn-primary icon-btn-round" id="send-chat-btn">
+                                    <i data-lucide="send"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 学习辅助工具箱 (番茄钟 & 康奈尔笔记) -->
+                        <div class="tools-module">
+                            <!-- 番茄钟 -->
+                            <div class="card pomodoro-card">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <i data-lucide="timer"></i>
+                                        <h3>番茄专注钟</h3>
+                                    </div>
+                                </div>
+                                <div class="card-body center-content">
+                                    <div class="pomodoro-timer">
+                                        <div class="timer-display" id="pomodoro-time">25:00</div>
+                                        <div class="timer-mode-label" id="pomodoro-mode">专注中</div>
+                                    </div>
+                                    <div class="timer-controls">
+                                        <button class="btn btn-secondary btn-sm" id="pomo-short-break-btn">短休 5m</button>
+                                        <button class="btn btn-secondary btn-sm" id="pomo-long-break-btn">长休 15m</button>
+                                        <button class="btn btn-secondary btn-sm" id="pomo-focus-btn">专注 25m</button>
+                                    </div>
+                                    <div class="timer-action-buttons">
+                                        <button class="btn btn-primary" id="timer-toggle-btn">
+                                            <i data-lucide="play" id="timer-btn-icon"></i> <span id="timer-btn-text">开始专注</span>
+                                        </button>
+                                        <button class="btn btn-outline" id="timer-reset-btn">重置</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 康奈尔笔记辅助器 -->
+                            <div class="card cornell-card">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <i data-lucide="book-open"></i>
+                                        <h3>康奈尔笔记整理器</h3>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <p class="tool-desc">康奈尔笔记法分为：线索/问题、笔记记录、总结三个板块。AI 可以协助您整理笔记。</p>
+                                    <button class="btn btn-secondary full-width" id="open-cornell-modal-btn">
+                                        <i data-lucide="file-plus-2"></i> 新建康奈尔笔记
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. 校园知识挑战赛视图 -->
+                <section id="view-game" class="content-view">
+                    <div class="game-layout">
+                        <!-- 游戏主体 -->
+                        <div class="card game-card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <i data-lucide="gamepad-2"></i>
+                                    <h3>校园智力问答赛</h3>
+                                </div>
+                                <div class="game-stats">
+                                    <span>最高分: <strong id="game-highscore">0</strong></span>
+                                    <span>连击数: <strong id="game-streak">0</strong></span>
+                                </div>
+                            </div>
+                            <div class="card-body game-body">
+                                <!-- 游戏未开始 -->
+                                <div class="game-state-container active" id="game-start-screen">
+                                    <div class="game-intro">
+                                        <div class="game-icon-glow">
+                                            <i data-lucide="award"></i>
+                                        </div>
+                                        <h2>趣味校园挑战赛</h2>
+                                        <p>回答关于校园生活、学习技巧、科技、文学等领域的趣味问答。每答对一题获得 10 积分！答错不扣分，看看您能坚持多少题！</p>
+                                        <button class="btn btn-primary btn-lg" id="start-game-btn">开始挑战</button>
+                                    </div>
+                                </div>
+
+                                <!-- 游戏进行中 -->
+                                <div class="game-state-container" id="game-play-screen">
+                                    <div class="game-progress">
+                                        <div class="progress-bar-bg">
+                                            <div class="progress-bar-fill" id="game-timer-fill" style="width: 100%"></div>
+                                        </div>
+                                        <div class="game-meta">
+                                            <span>第 <strong id="question-index">1</strong> 题</span>
+                                            <span>当前得分: <strong id="game-score">0</strong></span>
+                                        </div>
+                                    </div>
+                                    <div class="question-container">
+                                        <h3 id="question-text">问题载入中...</h3>
+                                        <div class="options-grid" id="question-options">
+                                            <!-- 动态生成选项按钮 -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 游戏结束 -->
+                                <div class="game-state-container" id="game-over-screen">
+                                    <div class="game-intro">
+                                        <h2>挑战结束！</h2>
+                                        <p class="final-score-text">您最终答对了 <strong id="game-final-correct">0</strong> 题，获得了 <strong id="game-final-points">0</strong> 积分！</p>
+                                        <div class="achievement-unlocked" id="game-achievement-notice" style="display: none;">
+                                            <i data-lucide="unlock"></i> <span>新徽章解锁！</span>
+                                        </div>
+                                        <button class="btn btn-primary" id="restart-game-btn">再试一次</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 个人成就与排行榜 -->
+                        <div class="game-sidebar">
+                            <!-- 校园勋章墙 -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <i data-lucide="badge-check"></i>
+                                        <h3>我的校园勋章</h3>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="badges-grid" id="badges-wall">
+                                        <!-- 动态勋章墙 -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 校园积分排行榜 -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <i data-lucide="trophy"></i>
+                                        <h3>积分排行榜</h3>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="leaderboard" id="leaderboard-list">
+                                        <!-- 动态排行榜 -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 6. 数据可视化视图 -->
+                <section id="view-data-viz" class="content-view">
+                    <div class="data-viz-grid">
+                        <div class="card col-2">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <i data-lucide="bar-chart-2"></i>
+                                    <h3>留言类别分布图</h3>
+                                </div>
+                            </div>
+                            <div class="card-body chart-wrapper">
+                                <canvas id="chart-category-distribution"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card col-2">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <i data-lucide="line-chart"></i>
+                                    <h3>本周社区活跃度趋势</h3>
+                                </div>
+                            </div>
+                            <div class="card-body chart-wrapper">
+                                <canvas id="chart-weekly-activity"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <i data-lucide="activity"></i>
+                                    <h3>学习计划分类占比</h3>
+                                </div>
+                            </div>
+                            <div class="card-body chart-wrapper">
+                                <canvas id="chart-schedule-types"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <i data-lucide="pie-chart"></i>
+                                    <h3>知识问答准确率</h3>
+                                </div>
+                            </div>
+                            <div class="card-body chart-wrapper center-content">
+                                <div class="accuracy-radial-container">
+                                    <div class="accuracy-circle">
+                                        <span id="quiz-accuracy-val">0%</span>
+                                        <span>累计正确率</span>
+                                    </div>
+                                </div>
+                                <div class="accuracy-stats-mini">
+                                    <p>已答题数: <strong id="accuracy-stat-total">0</strong></p>
+                                    <p>正确题数: <strong id="accuracy-stat-correct">0</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 7. 系统设置视图 -->
+                <section id="view-settings" class="content-view">
+                    <div class="settings-layout">
+                        <!-- Supabase 数据库配置 -->
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <i data-lucide="database"></i>
+                                    <h3>Supabase 云数据库集成 (提分项)</h3>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <p class="settings-desc">Campus Hub 默认工作在 LocalStorage 本地存储模式。配置您的 Supabase 服务后，即可将数据同步至云端，实现多端留言同步与共享！</p>
+                                <form id="supabase-config-form">
+                                    <div class="form-group">
+                                        <label for="sb-url">Supabase Project URL</label>
+                                        <input type="text" id="sb-url" placeholder="https://xxxxxx.supabase.co">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="sb-anon-key">Supabase Anon/Public Key</label>
+                                        <input type="password" id="sb-anon-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+                                    </div>
+                                    <div class="settings-actions">
+                                        <button type="submit" class="btn btn-primary">保存配置并连接</button>
+                                        <button type="button" class="btn btn-outline" id="disconnect-sb-btn">断开云端/返回本地</button>
+                                    </div>
+                                </form>
+                                <div class="database-guide">
+                                    <h4>👉 Supabase 快速连接指南</h4>
+                                    <p>1. 在 Supabase.com 注册并创建一个新项目。<br>
+                                       2. 创建一个名为 `posts` 的表。表结构需包含：<br>
+                                       <code>id (int8 / auto-increment), nickname (text), title (text), content (text), category (text), upvotes (int4), replies (jsonb / default: []), tags (jsonb / default: []), created_at (timestampz)</code><br>
+                                       3. 启用表的 Row Level Security (RLS) 并允许匿名 Public Read/Write。<br>
+                                       4. 将项目 URL 和 API Anon Key 填入上方并提交。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI API 配置 -->
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <i data-lucide="key"></i>
+                                    <h3>真实 AI 接口配置 (AI 真实对话)</h3>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <p class="settings-desc">在下方配置您的 Gemini API Key，即可将“智能学伴”升级为真实的 AI 对话大模型！若不配置，学伴将默认使用系统预设的智能语境模拟器工作。</p>
+                                <form id="ai-config-form">
+                                    <div class="form-group">
+                                        <label for="ai-api-key">Gemini API Key</label>
+                                        <input type="password" id="ai-api-key" placeholder="AIzaSy...">
+                                    </div>
+                                    <div class="settings-actions">
+                                        <button type="submit" class="btn btn-primary">激活真实 AI 模式</button>
+                                        <button type="button" class="btn btn-outline" id="disable-real-ai-btn">返回模拟模式</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- 弹窗：发表留言 Modal -->
+    <div class="modal-overlay" id="post-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>发表新留言</h2>
+                <button class="modal-close" id="close-post-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="new-post-form">
+                    <div class="form-group">
+                        <label for="post-nickname">匿名昵称</label>
+                        <input type="text" id="post-nickname" placeholder="如：写Bug的学长" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="post-category">留言分类</label>
+                            <select id="post-category">
+                                <option value="study">📚 学习辅助</option>
+                                <option value="schedule">📅 日程分享</option>
+                                <option value="game">🎮 校园游戏</option>
+                                <option value="community" selected>💬 社区服务</option>
+                                <option value="ai">🤖 AI 应用</option>
+                                <option value="data-viz">📊 数据分析</option>
+                                <option value="creative">💡 创意项目</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="post-tag">类型标签</label>
+                            <select id="post-tag">
+                                <option value="求助">❓ 求助问答</option>
+                                <option value="组队">🤝 寻求组队</option>
+                                <option value="创意">✨ 创意分享</option>
+                                <option value="吐槽">📢 日常树洞</option>
+                                <option value="公告">📌 活动通知</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="post-title">留言标题</label>
+                        <input type="text" id="post-title" placeholder="一句话概括你的留言..." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="post-content">正文内容 (支持 Markdown 排版)</label>
+                        <textarea id="post-content" rows="6" placeholder="输入你想分享的详细内容..." required></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" id="ai-polish-post-btn">
+                            <i data-lucide="sparkles"></i> 让 AI 帮我润色
+                        </button>
+                        <div class="modal-submit-group">
+                            <button type="button" class="btn btn-outline" id="cancel-post-btn">取消</button>
+                            <button type="submit" class="btn btn-primary">确认发布</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 弹窗：康奈尔笔记 Modal -->
+    <div class="modal-overlay" id="cornell-modal">
+        <div class="modal-card modal-lg">
+            <div class="modal-header">
+                <h2>康奈尔笔记整理器</h2>
+                <button class="modal-close" id="close-cornell-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body cornell-layout">
+                <div class="cornell-editor">
+                    <div class="form-group">
+                        <label for="cornell-title">笔记主题</label>
+                        <input type="text" id="cornell-title" placeholder="如：线性代数 - 矩阵的特征值">
+                    </div>
+                    <div class="cornell-grid">
+                        <div class="cornell-cue-column">
+                            <label for="cornell-cues">线索 & 核心问题 (Cues)</label>
+                            <textarea id="cornell-cues" rows="10" placeholder="记录关键字、待解决问题、核心考点..."></textarea>
+                        </div>
+                        <div class="cornell-notes-column">
+                            <label for="cornell-notes">课堂笔记记录 (Notes)</label>
+                            <textarea id="cornell-notes" rows="10" placeholder="详细记录课堂内容、公式、概念、推导过程..."></textarea>
+                        </div>
+                    </div>
+                    <div class="cornell-summary-row">
+                        <label for="cornell-summary">总结段 (Summary)</label>
+                        <textarea id="cornell-summary" rows="4" placeholder="用几句话总结这篇笔记的核心内容..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="ai-auto-cornell-btn">
+                    <i data-lucide="sparkles"></i> AI 智能整理/总结
+                </button>
+                <div class="modal-submit-group">
+                    <button class="btn btn-outline" id="close-cornell-btn">关闭</button>
+                    <button class="btn btn-primary" id="download-cornell-btn">
+                        <i data-lucide="download"></i> 导出笔记
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
